@@ -16,7 +16,9 @@ import fabrisoft.model.PerfilAcesso;
 import fabrisoft.model.Usuario;
 import fabrisoft.model.Sessao;
 import fabrisoft.util.Encripta;
+import fabrisoft.util.Erro;
 import fabrisoft.util.Mensagem;
+import fabrisoft.util.language.Texto;
 import fabrisoft.view.BaseForm;
 import fabrisoft.view.ConsultaBasicaView;
 import fabrisoft.view.UsuarioView;
@@ -48,7 +50,7 @@ public class UsuarioController{
         primeiroUsuario=true;
         frm.setVisible(true);
     }
-    @Override
+    
     protected final void carregaEventos(){
         frm.cancelar();
         ArrayList<Formulario> formularios=Formulario.todosNome();
@@ -186,7 +188,6 @@ public class UsuarioController{
             frm.cancelar();
         }
     }
-    @Override
     protected ActionListener gravar(){
         DefaultTableModel model = (DefaultTableModel) frm.getTabelaFormularios().getModel();
         return e->{
@@ -196,6 +197,7 @@ public class UsuarioController{
             );
             boolean gravar=false;
             
+            Erro erro=new Erro();
             //se for primeiro usuario tem que ser administrador
             if(primeiroUsuario){
                if(frm.getCbAdministrador().isSelected())
@@ -208,30 +210,37 @@ public class UsuarioController{
                         if(usuarioGravar.isAdministrador()){
                             if(logado.isAdministrador())
                                 gravar=true;
+                            else
+                                erro.putErro(Texto.ERRO_ADM_ALTERA_ADM);
                         }else
                             gravar=true;
                     }else{//Alterando
                     
                         if(usuarioGravar.isAdministrador()||usuarioAtual.isAdministrador()){
-                            if(logado.isAdministrador())
-                                if(!usuarioAtual.isAdministrador()||!usuarioAtual.ultimoAdministrador())//se antes nao era administrador
-                                    gravar=true;
-                                else
-                                    if() //nao é o ultimo administrador
+                            if(logado.isAdministrador()){
+                                if(usuarioAtual.isAdministrador())//era adm
+                                    if(!logado.ultimoAdministrador())//não é ultimo adm
                                         gravar=true;
+                                    else//é ultimo adm
+                                        erro.putErro(Texto.ERRO_ULTIMO_ADMINISTRADOR);
+                                else//não era administrador
+                                    gravar=true;
+                            }else//logado não é adm
+                                erro.putErro(Texto.ERRO_ADM_ALTERA_ADM);
                         }else//gravar nem atual é administrador
                             gravar=true;
                         
                    }
-                   
                else
                    Mensagem.permissaoGravar();
             }
             
-            
-            
-            
-            
+            if(usuarioGravar.getUsuario().length()>0)
+                erro.putErro(Texto.USUARIO_CURTO);
+            if(usuarioGravar.getSenha().length()>0)
+                erro.putErro(Texto.SENHA_CURTA);
+            if(Usuario.usuarioExiste(usuarioGravar.getUsuario())==null)
+                erro.putErro(Texto.USUARIO_EXISTE);
             
             
             if(primeiroUsuario||Sessao.getInstance().getUsuario().getFormulario(frm.getNome()).getPerfil().editarPermitido()){
@@ -240,8 +249,8 @@ public class UsuarioController{
 //                            frm.getCbAdministrador().isSelected()?Usuario.ADMINISTRADOR:Usuario.USUARIO);;
 
                     if((primeiroUsuario&&frm.getCbAdministrador().isSelected())||!primeiroUsuario)
-                        if(Usuario.usuarioExiste(u.getUsuario())==null)
-                            if(u.getUsuario().length()>0 && u.getSenha().length()>0){
+                        if(Usuario.usuarioExiste(usuarioGravar.getUsuario())==null)
+                            if(usuarioGravar.getUsuario().length()>0 && usuarioGravar.getSenha().length()>0){
                                 for(int i=0;i<model.getRowCount();i++){
                                     Formulario nf=new Formulario(((Formulario)model.getValueAt(i, 0)).getCodigo(), 
                                             ((Formulario)model.getValueAt(i, 0)).getNome());
@@ -249,12 +258,12 @@ public class UsuarioController{
                                     nf.setPerfil(new PerfilAcesso(Boolean.parseBoolean(model.getValueAt(i,1).toString()),
                                             Boolean.parseBoolean(model.getValueAt(i,2).toString()), 
                                             Boolean.parseBoolean(model.getValueAt(i,3).toString())));
-                                    u.addFormulario(nf);
+                                    usuarioGravar.addFormulario(nf);
                                 }
                                 gravar=false;
                                 if(!primeiroUsuario){
                                     
-                                    if(u.isAdministrador())
+                                    if(usuarioGravar.isAdministrador())
                                         if(logado.isAdministrador())
                                             if(logado.ultimoAdministrador()){
                                                 gravar=true;
@@ -267,10 +276,10 @@ public class UsuarioController{
                                 }else
                                     gravar=true;
 
-                                if(gravar&&u.gravar()){
+                                if(gravar&&usuarioGravar.gravar()){
                                     if(!primeiroUsuario){
 
-                                        preencheTela(u);
+                                        preencheTela(usuarioGravar);
                                         frm.visualizar();  
                                     }else{
                                         Mensagem.atencao("Usuário cadastrado com sucesso\n"

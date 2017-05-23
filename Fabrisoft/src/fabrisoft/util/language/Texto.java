@@ -20,5 +20,9 @@ public class Texto {
     public static final String TITULO="FABRISOFT";
     public static final String FORM_ERRADO="TIPO DE FORM ERRADO CARREGADO";
     public static final String SEM_USUARIO_CADASTRADO="Nenhum usuário cadastrado!\nDeseja cadastrar agora?";
-   
+    public static final String ERRO_ULTIMO_ADMINISTRADOR="Último administrador!\nExclusão não permitida!";
+    public static final String ERRO_ADM_ALTERA_ADM="Somente administrador tem permissão para criar ou alterar administrador";
+    
+    
+    public static final String SUCESSO_PRIMEIRO_USUARIO="Usuário cadastrado com sucesso\nNa próxima tela preencha com o usuário e senha cadastrados!"
 }
