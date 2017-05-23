@@ -34,6 +34,8 @@ public class UsuarioController{
     Formulario f=null;
     ConsultaBasicaView frmConsulta;
     private boolean primeiroUsuario=false;
+    
+    
     public void iniciar() {
         frm=new UsuarioView(null, true);
         f=Sessao.getInstance().getUsuario().getFormulario(frm.getNome());
@@ -59,6 +61,7 @@ public class UsuarioController{
             model.addRow(new Object[]{item,false,false,false});
         }
         
+        frm.getBtnGravar().addActionListener(gravar());
         frm.getTxtUsuario().setEnabled(false);
         frm.getTxtSenha().setEnabled(false);
         frm.getCbAdministrador().setEnabled(false);
@@ -100,7 +103,7 @@ public class UsuarioController{
             frm.alterar();
         });
         frm.getBtnCancelar().addActionListener(e->{
-            if(frm.getAcao()=='I'){
+            if(frm.getAcao()==BaseForm.INCLUINDO){
                 limpar();
                 frm.cancelar();
             }else{
@@ -115,20 +118,18 @@ public class UsuarioController{
             if(logado.getFormulario(frm.getNome()).getPerfil().excluirPermitido()){
                 estaLogado=logado.getCodigo()==u.getCodigo();
                 if(estaLogado){//é o logado
-                    if(Mensagem.confirmar("Se você excluir o seu registro o sistema será finalizado\nDeseja continuar?"))
+                    if(Mensagem.confirmar(Texto.MENSAGEM_SISTEMA_FINALIZADO))
                         excluir=true;
                     else
                         excluir=false;
                     
-                    if(excluir==true)
+                    if(excluir)
                         if(logado.isAdministrador()&&logado.ultimoAdministrador()){//é administrador e é o último
                             excluir=false;
-                            Mensagem.atencao("Erro ao excluir, você é o último administrador.");
+                            Mensagem.atencao(Texto.ERRO_ULTIMO_ADMINISTRADOR);
                         }else                      
                             if(Usuario.ultimo())//é o último
-                                if(Mensagem.confirmar("Você é o último usuário.\n"
-                                    + "Após a exclusão será necessário criar outro usuário!"
-                                    + "\nDeseja continuar?"))
+                                if(Mensagem.confirmar(Texto.MENSAGEM_ULTIMO_USUARIO))
                                     excluir=true;
                                 else
                                     excluir=false;
@@ -207,6 +208,7 @@ public class UsuarioController{
                 if(logado.getFormulario(frm.getNome()).getPerfil().editarPermitido())
                     
                     if(frm.getAcao()==BaseForm.INCLUINDO){
+                        
                         if(usuarioGravar.isAdministrador()){
                             if(logado.isAdministrador())
                                 gravar=true;
@@ -214,8 +216,11 @@ public class UsuarioController{
                                 erro.putErro(Texto.ERRO_ADM_ALTERA_ADM);
                         }else
                             gravar=true;
+                        
+                        if(Usuario.usuarioExiste(usuarioGravar.getUsuario())!=null)
+                            erro.putErro(Texto.MENSAGEM_USUARIO_EXISTE);
                     }else{//Alterando
-                    
+                        usuarioGravar.setCodigo(usuarioAtual.getCodigo());
                         if(usuarioGravar.isAdministrador()||usuarioAtual.isAdministrador()){
                             if(logado.isAdministrador()){
                                 if(usuarioAtual.isAdministrador())//era adm
@@ -236,12 +241,10 @@ public class UsuarioController{
             }
             
             if(gravar){
-                if(usuarioGravar.getUsuario().length()>0)
-                    erro.putErro(Texto.USUARIO_CURTO);
-                if(usuarioGravar.getSenha().length()>0)
-                    erro.putErro(Texto.SENHA_CURTA);
-                if(Usuario.usuarioExiste(usuarioGravar.getUsuario())==null)
-                    erro.putErro(Texto.USUARIO_EXISTE);
+                if(usuarioGravar.getUsuario().length()<0)
+                    erro.putErro(Texto.MENSAGEM_USUARIO_CURTO);
+                if(usuarioGravar.getSenha().length()<0)
+                    erro.putErro(Texto.MENSAGEM_SENHA_CURTA);
             }
             
             if(erro.isEmpty()){

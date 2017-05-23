@@ -25,7 +25,7 @@ public class LoginController {
     public void iniciar() {
         frm=new LoginView(null, true);
         carregaEventos(); 
-        while(!Usuario.existeUsuario()&&Mensagem.confirmar(Texto.SEM_USUARIO_CADASTRADO)){
+        while(!Usuario.existeUsuario()&&Mensagem.confirmar(Texto.MENSAGEM_SEM_USUARIO)){
             UsuarioController u=new UsuarioController();
             u.iniciar2();
         }

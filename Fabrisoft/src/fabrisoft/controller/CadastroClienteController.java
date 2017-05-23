@@ -43,7 +43,7 @@ public class CadastroClienteController extends BaseController {
         if(frm instanceof CadastroClienteView)
             this.frm=(CadastroClienteView)frm;
         else
-            throw new IllegalArgumentException(Texto.FORM_ERRADO);
+            throw new IllegalArgumentException(Texto.ERRO_FORM_ERRADO);
         
         Formulario f=Sessao.getInstance().getUsuario().getFormulario(frm.getNome());
         if(f!=null&&f.getPerfil().acessarPermitido()){

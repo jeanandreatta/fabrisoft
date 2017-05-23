@@ -14,19 +14,19 @@ import javax.swing.JOptionPane;
 public class Mensagem {
         
     public static void atencao(String msg){
-        JOptionPane.showMessageDialog(null, msg,Texto.ATENCAO, JOptionPane.WARNING_MESSAGE,null);
+        JOptionPane.showMessageDialog(null, msg,Texto.MENSAGEM_ATENCAO, JOptionPane.WARNING_MESSAGE,null);
     }
     private static void permissao(String msg){
-        JOptionPane.showMessageDialog(null, msg,Texto.SEM_PERMISSAO, JOptionPane.ERROR_MESSAGE,null);
+        JOptionPane.showMessageDialog(null, msg,Texto.MENSAGEM_SEM_PERMISSAO, JOptionPane.ERROR_MESSAGE,null);
     }
     public static void permissaoAcesso(){
-        permissao(Texto.ACESSAR_NAO_PERMITIDO);
+        permissao(Texto.MENSAGEM_ACESSAR_NAO_PERMITIDO);
     }
     public static void permissaoGravar(){
-        permissao(Texto.GRAVAR_NAO_PERMITIDO);
+        permissao(Texto.MENSAGEM_GRAVAR_NAO_PERMITIDO);
     }
     public static void permissaoExcluir(){
-        permissao(Texto.EXCLUIR_NAO_PERMITIDO);
+        permissao(Texto.MENSAGEM_EXCLUIR_NAO_PERMITIDO);
     }
     public static void sucesso(){
                JOptionPane.showMessageDialog(null, "Operação concluída com sucesso!!!","Sucesso!!!", 
