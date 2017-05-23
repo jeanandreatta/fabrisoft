@@ -19,16 +19,28 @@ public class Erro {
     public void putErro(String erro){
         qtde++;
         this.erro+=this.erro.isEmpty()?erro:", "+erro;
-    }
+    }/**
+     * Retorna erros separados por vírgula
+     * @return erro1, erro2 ...
+     */
     public String getErroVirgula(){
         return this.erro;
     }
+    /**
+     * Retorna erro formatados com quebra de linha.
+     * @return string erro1+\n+erro2 ...
+     */
     public String getErroEmLinha(){
         return this.erro.replaceAll(", ", "\n");
     }
     public int getQuantidade(){
         return qtde;
     }
+    
+    /**
+     * 
+     * @return true se estiver sem erros 
+     */
     public boolean isEmpty(){
         return qtde==0;
     }

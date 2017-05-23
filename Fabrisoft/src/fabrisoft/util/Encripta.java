@@ -1,11 +1,5 @@
 package fabrisoft.util;
  
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import static jdk.nashorn.tools.ShellFunctions.input;
 import org.bouncycastle.jcajce.provider.digest.SHA3;
  
 public final class Encripta {

@@ -189,7 +189,7 @@ public class UsuarioController{
         }
     }
     protected ActionListener gravar(){
-        DefaultTableModel model = (DefaultTableModel) frm.getTabelaFormularios().getModel();
+        DefaultTableModel modeloTabela = (DefaultTableModel) frm.getTabelaFormularios().getModel();
         return e->{
             Usuario usuarioGravar=new Usuario(frm.getTxtUsuario().getText(), 
                 Encripta.getHash(new String(frm.getTxtSenha().getPassword())), 
@@ -235,122 +235,47 @@ public class UsuarioController{
                    Mensagem.permissaoGravar();
             }
             
-            if(usuarioGravar.getUsuario().length()>0)
-                erro.putErro(Texto.USUARIO_CURTO);
-            if(usuarioGravar.getSenha().length()>0)
-                erro.putErro(Texto.SENHA_CURTA);
-            if(Usuario.usuarioExiste(usuarioGravar.getUsuario())==null)
-                erro.putErro(Texto.USUARIO_EXISTE);
+            if(gravar){
+                if(usuarioGravar.getUsuario().length()>0)
+                    erro.putErro(Texto.USUARIO_CURTO);
+                if(usuarioGravar.getSenha().length()>0)
+                    erro.putErro(Texto.SENHA_CURTA);
+                if(Usuario.usuarioExiste(usuarioGravar.getUsuario())==null)
+                    erro.putErro(Texto.USUARIO_EXISTE);
+            }
             
-            
-            if(primeiroUsuario||Sessao.getInstance().getUsuario().getFormulario(frm.getNome()).getPerfil().editarPermitido()){
-                if(frm.getAcao()==BaseForm.INCLUINDO){
-//                    Usuario u=new Usuario(frm.getTxtUsuario().getText(),Encripta.getHash(new String(frm.getTxtSenha().getPassword())), 
-//                            frm.getCbAdministrador().isSelected()?Usuario.ADMINISTRADOR:Usuario.USUARIO);;
-
-                    if((primeiroUsuario&&frm.getCbAdministrador().isSelected())||!primeiroUsuario)
-                        if(Usuario.usuarioExiste(usuarioGravar.getUsuario())==null)
-                            if(usuarioGravar.getUsuario().length()>0 && usuarioGravar.getSenha().length()>0){
-                                for(int i=0;i<model.getRowCount();i++){
-                                    Formulario nf=new Formulario(((Formulario)model.getValueAt(i, 0)).getCodigo(), 
-                                            ((Formulario)model.getValueAt(i, 0)).getNome());
+            if(erro.isEmpty()){
+                if(!usuarioGravar.getSenha().equals(new String(frm.getTxtSenha().getPassword())))//senha não alterada
+                    usuarioGravar.setSenha(Encripta.getHash(new String(frm.getTxtSenha().getPassword())));
+                 usuarioGravar.setTipo(frm.getCbAdministrador().isSelected()?Usuario.ADMINISTRADOR:Usuario.USUARIO);
+                 usuarioGravar.novosFormularios();
+                 
+                for(int i=0;i<modeloTabela.getRowCount();i++){
+                    Formulario novoFormulario=new Formulario(
+                            ((Formulario)modeloTabela.getValueAt(i, 0)).getCodigo(), 
+                            ((Formulario)modeloTabela.getValueAt(i, 0)).getNome()
+                    );
                                     
-                                    nf.setPerfil(new PerfilAcesso(Boolean.parseBoolean(model.getValueAt(i,1).toString()),
-                                            Boolean.parseBoolean(model.getValueAt(i,2).toString()), 
-                                            Boolean.parseBoolean(model.getValueAt(i,3).toString())));
-                                    usuarioGravar.addFormulario(nf);
-                                }
-                                gravar=false;
-                                if(!primeiroUsuario){
+                    novoFormulario.setPerfil(new PerfilAcesso(
+                            Boolean.parseBoolean(modeloTabela.getValueAt(i,1).toString()),//acessar
+                            Boolean.parseBoolean(modeloTabela.getValueAt(i,2).toString()),//gravar
+                            Boolean.parseBoolean(modeloTabela.getValueAt(i,3).toString())//excluir
+                    ));
                                     
-                                    if(usuarioGravar.isAdministrador())
-                                        if(logado.isAdministrador())
-                                            if(logado.ultimoAdministrador()){
-                                                gravar=true;
-                                            }else
-                                                Mensagem.atencao("Você é útimo administrador! Alteração não permitida!");
-                                        else
-                                           Mensagem.atencao("Somente administrador cria Administrador!");
-                                    else
-                                        gravar=true;
-                                }else
-                                    gravar=true;
-
-                                if(gravar&&usuarioGravar.gravar()){
-                                    if(!primeiroUsuario){
-
-                                        preencheTela(usuarioGravar);
-                                        frm.visualizar();  
-                                    }else{
-                                        Mensagem.atencao("Usuário cadastrado com sucesso\n"
-                                                + "Na próxima tela preencha com o usuário e senha cadastrados!");
-                                        frm.dispose();
-                                    }
-                                }else{
-                                    Mensagem.atencao("Ocorreu um erro ao gravar usuário. Tente novamente!");
-                                    frm.cancelar();
-                                }
-                            }else
-                                Mensagem.atencao("Usuario e/ou senha com tamanho curto demais!");
-                        else
-                            Mensagem.atencao("Usuário já cadastrado!");
-                    else
-                        Mensagem.atencao("Nenhum usuário cadastrado!\nO primeiro usuário tem que ser do tipo administrador!");
-                }else{//ALTERACAO
-                    Usuario u=(Usuario)Sessao.getInstance().getRegistroAtual();
-                    Usuario logado=(Usuario)Sessao.getInstance().getUsuario();
-                    boolean gravar=false;
-                    if(u.getTipo()=='A')//é administrador
-                        if(logado.getTipo()=='A')
-                            gravar=true;
-                        else
-                            Mensagem.atencao("Somente administrador pode editar administrador!");
-                    else //não é o administrador
-                        if(frm.getCbAdministrador().isSelected())
-                            if(logado.getTipo()=='A')
-                                gravar=true;
-                            else
-                                Mensagem.atencao("Somente administrador pode criar outro administrador!");
-                        else{
-                            boolean estaLogado=logado.getCodigo()==u.getCodigo();
-                            if(estaLogado){//é o logado
-                                if(!Usuario.ultimoAdministrador())//não é o último administrador
-                                        gravar=true;
-                                else
-                                    Mensagem.atencao("Você é o último administrador, alteração não permitida!");
-                            }else//não é o logado
-                                gravar=true;
-                        }
-                    if(gravar){
-                        if(!u.getSenha().equals(new String(frm.getTxtSenha().getPassword())))//senha não alterada               
-                            u.setSenha(Encripta.getHash(new String(frm.getTxtSenha().getPassword())));
-                        u.setTipo(frm.getCbAdministrador().isSelected()?'A':'U');
-                        u.novosFormularios();
-                        if(u.getSenha().length()>0){
-                                for(int i=0;i<model.getRowCount();i++){
-                                    Formulario nf=new Formulario(((Formulario)model.getValueAt(i, 0)).getCodigo(), 
-                                            ((Formulario)model.getValueAt(i, 0)).getNome());
-                                    nf.setPerfil(new PerfilAcesso(Boolean.parseBoolean(model.getValueAt(i,1).toString()),
-                                            Boolean.parseBoolean(model.getValueAt(i,2).toString()), 
-                                            Boolean.parseBoolean(model.getValueAt(i,3).toString())));
-                                    u.addFormulario(nf);
-                                }
-                                if(u.gravar()){
-                                    if(u.getCodigo()==Sessao.getInstance().getUsuario().getCodigo())
-                                        Sessao.getInstance().setUsuario(u);
-                                    preencheTela(u);
-                                    frm.visualizar();  
-                                }else{
-                                    Mensagem.atencao("Ocorreu um erro ao gravar usuário. Tente novamente!");
-                                    frm.cancelar();
-                                }
-                        }else
-                            Mensagem.atencao("Senha com tamanho curto demais!");
-                    }    
+                    usuarioGravar.addFormulario(novoFormulario);
                 }
-            }else//sem permissão
-                Mensagem.permissaoGravar();
-
+                 
+                if(usuarioGravar.gravar()){
+                    if(usuarioGravar.getCodigo()==Sessao.getInstance().getUsuario().getCodigo())//se for usuarioLogado
+                        Sessao.getInstance().setUsuario(usuarioGravar);
+                        preencheTela(usuarioGravar);
+                        frm.visualizar();  
+                    }else{
+                        Mensagem.atencao("Ocorreu um erro ao gravar usuário. Tente novamente!");
+                        frm.cancelar();
+                    }
+            }else
+                Mensagem.atencao(erro.getErroEmLinha());
         };
    }
    private void buscar(){

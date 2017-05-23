@@ -77,6 +77,8 @@ public class Usuario {
     private Date exclusao=null;
     private ArrayList <Formulario> formularios=new ArrayList<Formulario>();
     public static final char ADMINISTRADOR='A',USUARIO='U';
+    
+    
     public static Usuario doLogin(String usuario, String senha){
         Usuario u=usuarioExiste(usuario);
         if(u!=null&&u.getSenha().equals(Encripta.getHash(senha))){
@@ -270,6 +272,9 @@ private  int buscaCodigo(){
     
     public Usuario() {
     }
+    /**
+     * Gera um ArrayList vazio para ser preenchido com  novos formularios
+     */
     public void novosFormularios() {
         this.formularios=new ArrayList<>();        
         
